@@ -125,7 +125,7 @@ The tool uses temporary files during writes to prevent corruption:
 
 ## Development
 
-This project was developed with assistance from [aider.chat](https://github.com/Aider-AI/aider/).
+This project was developed with assistance from [aider.chat](https://github.com/Aider-AI/aider/) (more specifically, I used my [AiderBuilder](https://github.com/thiswillbeyourgithub/AiderBuilder/) agent).
 
 ## License
 
