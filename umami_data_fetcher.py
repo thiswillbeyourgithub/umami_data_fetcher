@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-Umami Data Fetcher - CLI tool for fetching Umami analytics data
+Umami Data Fetcher - CLI tool for fetching Umami analytics data.
+
+Uses click for CLI argument parsing and loguru for logging.
 Version: 1.0.0
 """
 
@@ -14,7 +16,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Optional
 
-import fire
+import click
 import requests
 from loguru import logger
 from tqdm import tqdm
@@ -43,21 +45,29 @@ class UmamiDataFetcher:
         website_ids: Optional[str] = None,
         output_dir: str = "./output",
         api_key: Optional[str] = None,
-        since: str = None,
+        since: Optional[str] = None,
         rps: float = 1.0,
         output_format: str = "both",
-    ):
+    ) -> None:
         """
         Fetch Umami analytics data hour by hour.
 
-        Args:
-            instance_url: Umami instance URL (default: https://api.umami.is/v1)
-            website_ids: Comma-separated website IDs (if None, fetch all available)
-            output_dir: Directory to store CSV and log files
-            api_key: Umami API key (if None, load from UMAMI_API_KEY env var)
-            since: Time period to fetch data for (e.g., "37d" for 37 days, "25h" for 25 hours)
-            rps: Requests per second rate limit (default: 1.0)
-            output_format: Output format - "csv", "json", or "both" (default: "both")
+        Parameters
+        ----------
+        instance_url : str
+            Umami instance URL (default: https://api.umami.is/v1).
+        website_ids : str, optional
+            Comma-separated website IDs. If None, fetch all available.
+        output_dir : str
+            Directory to store CSV and log files.
+        api_key : str, optional
+            Umami API key. If None, load from UMAMI_API_KEY env var.
+        since : str, optional
+            Time period to fetch data for (e.g., "37d" for 37 days, "25h" for 25 hours).
+        rps : float
+            Requests per second rate limit (default: 1.0).
+        output_format : str
+            Output format - "csv", "json", or "both" (default: "both").
         """
         # Setup logging
         self._setup_logging(output_dir)
@@ -575,9 +585,67 @@ class UmamiDataFetcher:
             raise e
 
 
-def main():
-    """Main entry point for Fire CLI."""
-    fire.Fire(UmamiDataFetcher)
+@click.command()
+@click.option(
+    "--instance-url",
+    default="https://api.umami.is/v1",
+    show_default=True,
+    help="Umami instance URL.",
+)
+@click.option(
+    "--website-ids",
+    default=None,
+    help="Comma-separated website IDs. If omitted, fetch all available.",
+)
+@click.option(
+    "--output-dir",
+    default="./output",
+    show_default=True,
+    help="Directory to store CSV and log files.",
+)
+@click.option(
+    "--api-key",
+    default=None,
+    help="Umami API key. Falls back to UMAMI_API_KEY env var.",
+)
+@click.option(
+    "--since",
+    required=True,
+    help="Time period to fetch (e.g. '37d' for 37 days, '25h' for 25 hours).",
+)
+@click.option(
+    "--rps",
+    default=1.0,
+    show_default=True,
+    help="Requests per second rate limit.",
+)
+@click.option(
+    "--output-format",
+    type=click.Choice(["csv", "json", "both"], case_sensitive=False),
+    default="both",
+    show_default=True,
+    help="Output format.",
+)
+def main(
+    instance_url: str,
+    website_ids: Optional[str],
+    output_dir: str,
+    api_key: Optional[str],
+    since: str,
+    rps: float,
+    output_format: str,
+) -> None:
+    """Fetch Umami analytics data hour by hour."""
+    fetcher = UmamiDataFetcher()
+    fetcher.fetch_data(
+        instance_url=instance_url,
+        website_ids=website_ids,
+        output_dir=output_dir,
+        api_key=api_key,
+        since=since,
+        rps=rps,
+        output_format=output_format,
+    )
 
 
 if __name__ == "__main__":
